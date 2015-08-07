@@ -49,15 +49,18 @@ remote_file download_file_path do
   source node['haproxy']['source']['url']
   checksum node['haproxy']['source']['checksum']
   action :create_if_missing
+  notifies :create, "ruby_block[Validating checksum for the downloaded tarball]", :immediately 
 end
 
 ruby_block "Validating checksum for the downloaded tarball" do
+  action :nothing
   block do
     checksum = Digest::SHA2.file(download_file_path).hexdigest
     if checksum != node['haproxy']['source']['checksum']
       raise "Checksum of the downloaded file #{checksum} does not match known checksum #{node['haproxy']['source']['checksum']}"
     end
   end
+  notifies :run, "bash[compile_haproxy]", :immediately
 end
 
 make_cmd = "make TARGET=#{node['haproxy']['source']['target_os']}"
@@ -68,6 +71,7 @@ make_cmd << " USE_OPENSSL=1" if node['haproxy']['source']['use_openssl']
 make_cmd << " USE_ZLIB=1" if node['haproxy']['source']['use_zlib']
 
 bash "compile_haproxy" do
+  action :nothing
   cwd Chef::Config[:file_cache_path]
   code <<-EOH
     tar xzf haproxy-#{node['haproxy']['source']['version']}.tar.gz
