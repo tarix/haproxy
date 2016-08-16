@@ -78,7 +78,7 @@ bash "compile_haproxy" do
     cd haproxy-#{node['haproxy']['source']['version']}
     #{make_cmd} && make install PREFIX=#{node['haproxy']['source']['prefix']}
   EOH
-  creates "#{node['haproxy']['source']['prefix']}/sbin/haproxy"
+  # creates "#{node['haproxy']['source']['prefix']}/sbin/haproxy"
 end
 
 user "haproxy" do
